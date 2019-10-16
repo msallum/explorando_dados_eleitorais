@@ -1,0 +1,33 @@
+# Notas sobre os dados
+# Os dados Boletim de Urna fornecem o resultado da eleições de cada urna
+# Brancos, nulos e votos, para cada cargo possível
+# Para cada urna para cada seção eleitoral
+# Teremos que baixar esses dados todos, o que vai ser um trabalho ingrato
+# Podemos aprender a fazer isso em R ou fazer em Python mesmo
+# Há esperanças de que os dados munzona bastem.
+# Vamos esperar os dados de 2018 terminarem o download pra dar uma olhada neles
+# E ver se eles realmente são suficientes
+# Parece que são. Além disso, parece que os dados de pesidência,
+# que são um bom ponto de partida pras análises, estão em planilhas segregadas 
+
+# http://www.tse.jus.br/hotsites/pesquisas-eleitorais/resultados_anos/2018.html
+# Provavelmente quereremos nos limitar à seção
+
+# Os dados de eleitorado por seção eleitoral estão disponíveis em 
+# http://www.tse.jus.br/eleicoes/estatisticas/repositorio-de-dados-eleitorais-1/repositorio-de-dados-eleitorais
+
+# Aparentemente temos dados incrivelmente capilarizados até seção eleitoral
+# para detalhes sobre os eleitores, e cados até a urna para detalhes sobre como votaram
+
+# Como os detalhes sobre eleitores acabam em seção eleitoral, e de qualquer forma
+# a quantidade de eleitores por urna é bem baixa, podemos parar em "seção"
+# sem medo
+
+# Além disso, os dados parecem já estar bem formatados!
+
+O problema com a base de dados sobre o eleitorado do TSE é que ela provavelmente é um tanto desatualizada.
+Os dados de lá são os registrados pela eleitora no momento em que tira o título. 
+Eu, por exemplo, estaria listado como morador do Morumbi, ensino médio incompleto.
+Ele provavelmente subestima em peso o nível de escolaridade, e não capta variações ano-ano na mesma pessoa, suponho.
+Uma solução para isso pode ser usar os microdados da PNAD. 
+O problema nessa forma é que talvez percamos precisão, pois esses certamente não tem a categoria "seção eleitoral", e, na melhor das hipóteses, param em "Município"
