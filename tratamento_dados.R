@@ -57,4 +57,11 @@ votos_2018 <- votos_2018_raw %>%
   summarise(VOTOS = sum(QT_VOTOS)) %>%
   spread(key = NM_VOTAVEL, value = VOTOS)  # Tidy, cada candidato como uma variavel
 
-  
+tse_2018 <- perfil_2018 %>%
+  inner_join(votos_2018, by = NULL)  # Dataframe geral unificando os dados do TSE
+
+write_csv(tse_2018, path = './dados/dados_formatados/tse_2018.csv')
+
+# TODO: Gerar um DF tse_2 que só discerna até município (i.e droppar zona)
+# TODO: Tratar os dataframes com outros dados em um df_info
+# TODO: Unificar o tse_2 com o df_info
