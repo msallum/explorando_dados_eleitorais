@@ -1,7 +1,9 @@
 library(tidyverse)
 library(stringr)
+library(caret)
+set.seed(93)
 
-dir_perfil_elet_2018 <- './dados/dados_brutos_tse/perfil_eleitorado/planilhas/perfil_eleitorado_2018.csv'
+dir_perfil_elet_2018 <- 'C:/users/josez/Desktop/Economia/Politica Brasil/explorando_dados_eleitorais/dados/dados_brutos_tse/perfil_eleitorado/planilhas/perfil_eleitorado_2018.csv'
 perfil_2018_raw <- read_csv2(dir_perfil_elet_2018, locale = locale(encoding = "latin1"))
 
 idade_est <- function (x) {
@@ -28,8 +30,8 @@ perfil_2018 <- perfil_2018_raw %>%
   arrange(SG_UF, CD_MUNICIPIO, NM_MUNICIPIO, NR_ZONA, DS_GENERO, IDADE_EST_MED, QT_ELEITORES_PERFIL) %>%
   group_by(SG_UF, CD_MUNICIPIO, NM_MUNICIPIO, NR_ZONA, DS_GENERO, IDADE_EST_MED) %>%
   summarise(ELEITORES = sum(QT_ELEITORES_PERFIL, na.rm = TRUE)) %>%  # Consolida quantidade de eleitores
-  spread(key = DS_GENERO, value = ELEITORES) %>%  # Cria colunas específicas para genero
-  rename(NAO_INFORMADO = `NÃO INFORMADO` ) %>%
+  spread(key = DS_GENERO, value = ELEITORES) %>%  # Cria colunas espec?ficas para genero
+  rename(NAO_INFORMADO = `N?O INFORMADO` ) %>%
   mutate(
     NAO_INFORMADO = na_para_zero(NAO_INFORMADO),
     MASCULINO = na_para_zero(MASCULINO),
@@ -46,9 +48,8 @@ perfil_2018 <- perfil_2018_raw %>%
 
 
 
-dir_votos_2018 <- './dados/dados_brutos_tse/votaçao_presidente/planilhas/votacao_secao_2018_BR.csv'
+dir_votos_2018 <- 'C:/users/josez/Desktop/Economia/Politica Brasil/explorando_dados_eleitorais/dados/dados_brutos_tse/votacao_presidente/planilhas/votacao_secao_2018_BR.csv'
 votos_2018_raw <- read_csv2(dir_votos_2018, locale = locale(encoding = "latin1"))
-colnames((votos_2018))
 
 votos_2018 <- votos_2018_raw %>%
   select(NR_TURNO, SG_UF, CD_MUNICIPIO, NM_MUNICIPIO, NR_ZONA, NM_VOTAVEL, QT_VOTOS) %>%
@@ -58,10 +59,32 @@ votos_2018 <- votos_2018_raw %>%
   spread(key = NM_VOTAVEL, value = VOTOS)  # Tidy, cada candidato como uma variavel
 
 tse_2018 <- perfil_2018 %>%
-  inner_join(votos_2018, by = NULL)  # Dataframe geral unificando os dados do TSE
+  inner_join(votos_2018, by = NULL) %>%  # Dataframe geral unificando os dados do TSE
+  replace(is.na(.), 0)
 
 write_csv(tse_2018, path = './dados/dados_formatados/tse_2018.csv')
 
-# TODO: Gerar um DF tse_2 que só discerna até município (i.e droppar zona)
+#samples: 0.6 para treino, 0.1 para confirmação, 0.3 para teste puro
+cria_sample_ind <- function(data, pc){
+  sample(seq_len(nrow(data)), size = floor(pc*nrow(data)))
+}
+
+teste_ind <- cria_sample_ind(tse_2018, 0.3)
+teste_tse_2018 = tse_2018[teste_ind, ]
+resto = tse_2018[-teste_ind, ]
+
+confirm_ind = cria_sample_ind(resto, 1/7)
+confirm_tse_2018 = resto[confirm_ind, ]
+treino_tse_2018 = resto[-confirm_ind, ]
+
+write_csv(treino_tse_2018, path = './dados/dados_formatados/treino_tse_2018.csv')
+write_csv(teste_tse_2018, path = './dados/dados_formatados/teste_tse_2018.csv')
+write_csv(confirm_tse_2018, path = './dados/dados_formatados/confirm_tse_2018.csv')
+
+
+
+
+
 # TODO: Tratar os dataframes com outros dados em um df_info
 # TODO: Unificar o tse_2 com o df_info
+# TODO: Analisar primeiro só o tse_2018; depois, o brasil_2018
