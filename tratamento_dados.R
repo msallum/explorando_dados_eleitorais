@@ -1,6 +1,5 @@
 library(tidyverse)
 library(stringr)
-library(caret)
 set.seed(93)
 
 dir_perfil_elet_2018 <- 'C:/users/josez/Desktop/Economia/Politica Brasil/explorando_dados_eleitorais/dados/dados_brutos_tse/perfil_eleitorado/planilhas/perfil_eleitorado_2018.csv'
@@ -31,7 +30,7 @@ perfil_2018 <- perfil_2018_raw %>%
   group_by(SG_UF, CD_MUNICIPIO, NM_MUNICIPIO, NR_ZONA, DS_GENERO, IDADE_EST_MED) %>%
   summarise(ELEITORES = sum(QT_ELEITORES_PERFIL, na.rm = TRUE)) %>%  # Consolida quantidade de eleitores
   spread(key = DS_GENERO, value = ELEITORES) %>%  # Cria colunas espec?ficas para genero
-  rename(NAO_INFORMADO = `N?O INFORMADO` ) %>%
+  rename(NAO_INFORMADO = `NÃO INFORMADO` ) %>%
   mutate(
     NAO_INFORMADO = na_para_zero(NAO_INFORMADO),
     MASCULINO = na_para_zero(MASCULINO),
@@ -60,7 +59,9 @@ votos_2018 <- votos_2018_raw %>%
 
 tse_2018 <- perfil_2018 %>%
   inner_join(votos_2018, by = NULL) %>%  # Dataframe geral unificando os dados do TSE
-  replace(is.na(.), 0)
+  replace(is.na(.), 0) %>%
+  select(-'VOTO ANULADO E APURADO EM SEPARADO')
+
 
 write_csv(tse_2018, path = './dados/dados_formatados/tse_2018.csv')
 
@@ -80,9 +81,6 @@ treino_tse_2018 = resto[-confirm_ind, ]
 write_csv(treino_tse_2018, path = './dados/dados_formatados/treino_tse_2018.csv')
 write_csv(teste_tse_2018, path = './dados/dados_formatados/teste_tse_2018.csv')
 write_csv(confirm_tse_2018, path = './dados/dados_formatados/confirm_tse_2018.csv')
-
-
-
 
 
 # TODO: Tratar os dataframes com outros dados em um df_info
