@@ -1,6 +1,7 @@
 library(tidyverse)
 library(stringr)
 
+#Baixe os dados
 dir_perfil_elet_2018 <- './dados/dados_brutos_tse/perfil_eleitorado/planilhas/perfil_eleitorado_2018.csv'
 perfil_2018_raw <- read_csv2(dir_perfil_elet_2018, locale = locale(encoding = "latin1"))
 
