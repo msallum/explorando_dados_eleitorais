@@ -1,0 +1,2 @@
+O uso da PNAD implica em várias mudanças ao design da pesquisa. Ganhamos dados de escolaridade e os dados de renda e população rural ficam muito melhores, a custo de piora nos dados do TSE em geral e uma redução brutal na granularidade do painel (de ~5000 observações para apenas 81), pois é necessário agrupar os dados em [Capital, Região Metropolitana ex Capital, Resto da UF]
+No futuro, se esse projeto virar o TCC, discutir com o professor o que vale mais: Usar a PNAD, usar os dados miguelados ou abandonar as colunas de escolaridade, renda e ruralidade.
