@@ -1,8 +1,26 @@
 library(tidyverse)
 library(stringr)
 library(FactoMineR)
+library(here)
+library(pls)
+library(stargazer)
 
-tse_18= read_csv('C:/users/josez/Desktop/Economia/Politica Brasil/explorando_dados_eleitorais/dados/dados_formatados/treino_tse_2018.csv')
+tse_18= read_csv(here::here('dados/dados_formatados/treino_tse_2018.csv'))
+veja= readxl::read_xlsx(here::here('respostas Candidatos Veja.xlsx'))
+veja[veja=="-"]<-"0"
+
+veja_ans<-as.tibble(t(veja))
+names(veja_ans)<-veja_ans[1,]
+
+veja_ans<-veja_ans%>%
+  slice(2:n()-1)%>%
+  mutate(across(everything(), as.numeric))
+  
+  
+
+
+
+pca_veja<-PCA(veja_ans)
 
 # Análise PCA. Objetivo: Averiguar se a political compass é legit
 tse_18_votos_1t <- tse_18 %>%
@@ -10,8 +28,9 @@ tse_18_votos_1t <- tse_18 %>%
   select('ALVARO FERNANDES DIAS':'VOTO NULO') %>%
   replace(is.na(.), 0)
 
+
 head(tse_18_votos_1t)
-pca = PCA(tse_18_votos_1t)
+pca = FactoMineR::PCA(tse_18_votos_1t)
 print(pca)
 summary(pca)
 # O primeiro fator, que explica 72% da variação, tem muita cara de ser só o tamanho de cada zona eleitoral disfarçado
@@ -25,6 +44,7 @@ tse_18_votos_1t_pc <- tse_18 %>%
   replace(is.na(.), 0) %>%
   mutate_at(vars(-ELEITORES), funs(./ ELEITORES)) %>%
   select(-ELEITORES)
+names(tse_18_votos_1t_pc)=append(names(veja_ans), c('Branco', 'Nulo'))
 pca_pc <- PCA(tse_18_votos_1t_pc)
 summary(pca_pc)
 coords = pca_pc$var$coord
@@ -52,4 +72,33 @@ summary_tse_18 <- summary(tse_18)
 # com uma quantidade alta de distrito reportando 0 votos para o candidato.
 # As exceções, e olhe lá, são Brancos, Nulos, Bolsonaro e Haddad
 
+colnames(tse_18)[10:22]<-names(veja_ans)
+veja_ans$pergunta<-c(1:20)
+colnames(veja)[1]<-"candidates"
 
+
+reg_data<-tse_18%>%
+  pivot_longer('Alvaro Dias':'Vera Lucia', names_to = "candidates", values_to = "votes")%>%
+  left_join(veja, by="candidates")%>%
+  select(-`-`)
+
+reg_data%>%
+  mutate(outside=`VOTO BRANCO`+`VOTO NULO`,
+         ln_votos=log(votes),
+         ln_oo=log(outside),
+         y=ln_votos-ln_oo)%>%
+  filter(is.finite(y))%>%
+  lm(y~0+as.factor(candidates), data=.)->reg
+
+coe<-reg$coefficients
+names(coe)<-names(veja_ans)[1:13]
+
+coeffi<-tibble(candidates=names(coe),
+               outcomes= coe)
+
+pcr_data<-coeffi%>%
+  left_join(veja, by="candidates")%>%
+  select(-`-`)
+test<-pcr(outcomes~., data=pcr_data,ncomp = 5)
+
+summary(test)
